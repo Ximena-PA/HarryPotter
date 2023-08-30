@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personajes de Harry Potter</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap/dist/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1>Personajes de Harry Potter</h1>
+    <input type="text" id="search" class="form-control mb-3" placeholder="Buscar por nombre">
+    <select id="houseFilter" class="form-select mb-3">
+      <option value="">Todas las casas</option>
+      <option value="Gryffindor">Gryffindor</option>
+      <option value="Hufflepuff">Hufflepuff</option>
+      <option value="Ravenclaw">Ravenclaw</option>
+      <option value="Slytherin">Slytherin</option>
+    </select>
+    <div id="characterList" class="row">
+      <!-- Aquí se mostrarán las fichas de presentación de los personajes -->
+    </div>
+  </div>
+
+  <script>
+    // Función para cargar y mostrar los personajes
+    function loadCharacters() {
+      fetch('https://hp-api.onrender.com/api/characters')
+        .then(response => response.json())
+        .then(data => {
+          const searchInput = document.getElementById('search');
+          const houseFilter = document.getElementById('houseFilter');
+          const characterList = document.getElementById('characterList');
+
+          // Función para actualizar la lista de personajes
+          function updateCharacterList() {
+            const searchText = searchInput.value.toLowerCase();
+            const selectedHouse = houseFilter.value.toLowerCase();
+
+            const filteredCharacters = data.filter(character => {
+              // Filtrar por nombre
+              const nameMatch = character.name.toLowerCase().includes(searchText);
+              // Filtrar por casa (si está seleccionada)
+              const houseMatch = selectedHouse === '' || character.house.toLowerCase() === selectedHouse;
+
+              return nameMatch && houseMatch;
+            });
+
+            characterList.innerHTML = '';
+
+            filteredCharacters.forEach(character => {
+              const card = document.createElement('div');
+              card.classList.add('col-md-4', 'mb-3');
+
+              card.innerHTML = `
+                <div class="card">
+                  <img src="${character.image ? character.image : 'imagenxdefecto.jpg'}" class="card-img-top" alt="${character.name}">
+                  <div class="card-body">
+                    <h5 class="card-title">${character.name}</h5>
+                    <p class="card-text">${character.house}</p>
+                  </div>
+                </div>
+              `;
+
+              characterList.appendChild(card);
+            });
+          }
+
+          // Escuchar eventos de búsqueda y filtro
+          searchInput.addEventListener('input', updateCharacterList);
+          houseFilter.addEventListener('change', updateCharacterList);
+
+          // Mostrar personajes al cargar la página
+          updateCharacterList();
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Cargar los personajes al cargar la página
+    loadCharacters();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
